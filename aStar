@@ -1,0 +1,118 @@
+class Nodo():
+
+    def __init__(self, pariente=None, posicion=None):
+        self.pariente = pariente
+        self.posicion = posicion
+
+        self.g = 0
+        self.h = 0
+        self.f = 0
+
+    def __eq__(self, otro):
+        return self.posicion == otro.posicion
+
+
+def astar(mapa, inicio, objetivo):
+    
+    # Create inicio and objetivo Nodo
+    Nodo_incio = Nodo(None, inicio)
+    Nodo_incio.g = Nodo_incio.h = Nodo_incio.f = 0
+    Nodo_fin = Nodo(None, objetivo)
+    Nodo_fin.g = Nodo_fin.h = Nodo_fin.f = 0
+
+    # listas
+    lista_abierta = []
+    lista_cerrada = []
+
+    # agregando el nodo inicio a la lista
+    lista_abierta.append(Nodo_incio)
+
+    # mientras que la lista bierta tenga elementos
+    while len(lista_abierta) > 0:
+
+        # obtener el nodo actual con f minima
+        Nodo_actual = lista_abierta[0]
+        index_actual = 0
+        for index, item in enumerate(lista_abierta):
+            if item.f < Nodo_actual.f:
+                Nodo_actual = item
+                index_actual = index
+
+        # sacar de la lista abierta y meter a la lista cerrada
+        lista_abierta.pop(index_actual)
+        lista_cerrada.append(Nodo_actual)
+
+        # Encuentra el objetivo
+        if Nodo_actual == Nodo_fin:
+            path = []
+            current = Nodo_actual
+            while current is not None:
+                path.append(current.posicion)
+                current = current.pariente
+            return path[::-1] # retorna en reversa
+
+        # Genera los sucesores
+        sucesores = []
+        for pos in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]: # adyacentes
+
+            # Get Nodo posicion
+            Nodo_posicion = (Nodo_actual.posicion[0] + pos[0], Nodo_actual.posicion[1] + pos[1])
+
+            # Asegurarse que está en el rango
+            if Nodo_posicion[0] > (len(mapa) - 1) or Nodo_posicion[0] < 0 or Nodo_posicion[1] > (len(mapa[len(mapa)-1]) -1) or Nodo_posicion[1] < 0:
+                continue
+
+            # asesugurase del camino transitable
+            if mapa[Nodo_posicion[0]][Nodo_posicion[1]] != 0:
+                continue
+
+            # crear nuevo nodo
+            nuevo_Nodo = Nodo(Nodo_actual, Nodo_posicion)
+
+            # agrega 
+            sucesores.append(nuevo_Nodo)
+
+        # tratando los sucesores
+        for sucesor in sucesores:
+
+            # sucesor esta en la lista cerrada 
+            for closed_child in lista_cerrada:
+                if sucesor == closed_child:
+                    continue
+
+            # creando los valores f,g,h
+            sucesor.g = Nodo_actual.g + 1
+            sucesor.h = ((sucesor.posicion[0] - Nodo_fin.posicion[0]) ** 2) + ((sucesor.posicion[1] - Nodo_fin.posicion[1]) ** 2)
+            sucesor.f = sucesor.g + sucesor.h
+
+            # sucesor esta ya en la lisa abierta 
+            for open_Nodo in lista_abierta:
+                if sucesor == open_Nodo and sucesor.g > open_Nodo.g:
+                    continue
+
+            # agregando sucesor en la lista bierta
+            lista_abierta.append(sucesor)
+
+
+def main():
+
+    mapa = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+    inicio = (0, 0)
+    objetivo = (7, 6)
+
+    camino = astar(mapa, inicio, objetivo)
+    print(camino)
+
+
+if __name__ == '__main__':
+    main()
